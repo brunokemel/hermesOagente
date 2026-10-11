@@ -1,0 +1,293 @@
+import React, { useState } from 'react';
+import styled from 'styled-components';
+
+/**
+ * @page Skills
+ * @description Página para gerenciamento de skills do Hermes Agent.
+ *              Permite visualizar, criar, editar e excluir skills.
+ */
+const Skills: React.FC = () => {
+  const [skills, setSkills] = useState([
+    { id: 1, name: 'web-search', description: 'Pesquisa na web usando múltiplos backends', category: 'research', enabled: true },
+    { id: 2, name: 'terminal', description: 'Execução de comandos no terminal do sistema', category: 'system', enabled: true },
+    { id: 3, name: 'file-operations', description: 'Leitura, escrita e manipulação de arquivos', category: 'system', enabled: true },
+    { id: 4, name: 'email-inbox-triage', description: 'Triagem e respostas seguras para emails', category: 'productivity', enabled: false },
+    { id: 5, name: 'github', description: 'Integração com GitHub para PRs, issues e reviews', category: 'development', enabled: false },
+  ]);
+  
+  const [filterCategory, setFilterCategory] = useState('all');
+  const [searchTerm, setSearchTerm] = useState('');
+  
+  const filteredSkills = skills.filter(skill => {
+    const matchesCategory = filterCategory === 'all' || skill.category === filterCategory;
+    const matchesSearch = skill.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                         skill.description.toLowerCase().includes(searchTerm.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
+  
+  const categories = ['all', ...new Set(skills.map(s => s.category))];
+  
+  const toggleSkill = (id: number) => {
+    setSkills(skills.map(skill => 
+      skill.id === id ? { ...skill, enabled: !skill.enabled } : skill
+    ));
+  };
+  
+  const addSkill = () => {
+    const newId = Math.max(...skills.map(s => s.id)) + 1;
+    setSkills([...skills, {
+      id: newId,
+      name: `nova-skill-${newId}`,
+      description: 'Descrição da nova skill',
+      category: 'custom',
+      enabled: true
+    }]);
+  };
+  
+  return (
+    <SkillsContainer>
+      <Header>
+        <h1>Gerenciamento de Skills</h1>
+        <div className="actions">
+          <input
+            type="text"
+            placeholder="Buscar skills..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="search-input"
+          />
+          <button onClick={addSkill} className="add-button">
+            ➕ Nova Skill
+          </button>
+        </div>
+      </Header>
+      
+      <Filters>
+        <div className="filter-label">Filtrar por categoria:</div>
+        <div className="category-tabs">
+          {categories.map((category) => (
+            <button
+              key={category}
+              onClick={() => setFilterCategory(category)}
+              className={filterCategory === category ? 'active' : ''}
+            >
+              {category === 'all' ? 'Todas' : category}
+            </button>
+          ))}
+        </div>
+      </Filters>
+      
+      <SkillsList>
+        {filteredSkills.length === 0 ? (
+          <p className="empty-state">Nenhuma skill encontrada com os filtros aplicados.</p>
+        ) : (
+          filteredSkills.map((skill) => (
+            <SkillCard key={skill.id} skill={skill} onToggle={toggleSkill} />
+          ))
+        )}
+      </SkillsList>
+    </SkillsContainer>
+  );
+};
+
+const SkillsContainer = styled.div``;
+
+const Header = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  
+  h1 {
+    font-size: 24px;
+    margin: 0;
+    color: #f0f6fc;
+  }
+  
+  .actions {
+    display: flex;
+    gap: 12px;
+    
+    .search-input {
+      padding: 8px 12px;
+      background-color: #0d1117;
+      border: 1px solid #30363d;
+      border-radius: 4px;
+      color: #c9d1d9;
+      width: 250px;
+      
+      &::placeholder {
+        color: #8b949e;
+      }
+    }
+    
+    .add-button {
+      padding: 8px 16px;
+      background-color: #238636;
+      border: none;
+      border-radius: 4px;
+      color: white;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      
+      &:hover {
+        background-color: #2ea043;
+      }
+    }
+  }
+`;
+
+const Filters = styled.div`
+  background-color: #0d1117;
+  border: 1px solid #30363d;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 24px;
+  
+  .filter-label {
+    font-size: 14px;
+    color: #8b949e;
+    margin-bottom: 8px;
+    display: block;
+  }
+  
+  .category-tabs {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    
+    button {
+      padding: 6px 12px;
+      background-color: #21262d;
+      border: 1px solid #30363d;
+      border-radius: 4px;
+      color: #c9d1d9;
+      font-size: 13px;
+      cursor: pointer;
+      
+      &:hover {
+        background-color: #30363d;
+      }
+      
+      &.active {
+        background-color: #1f6feb;
+        border-color: #1f6feb;
+        color: white;
+      }
+    }
+  }
+`;
+
+const SkillsList = styled.div``;
+
+const SkillCardStyled = styled.div`
+  background-color: #0d1117;
+  border: 1px solid #30363d;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  
+  .info {
+    flex: 1;
+    
+    .name {
+      font-size: 16px;
+      font-weight: 600;
+      color: #f0f6fc;
+      margin-bottom: 4px;
+    }
+    
+    .description {
+      font-size: 14px;
+      color: #8b949e;
+      margin-bottom: 8px;
+    }
+    
+    .meta {
+      display: flex;
+      gap: 12px;
+      font-size: 12px;
+      color: #8b949e;
+      
+      .category {
+        background-color: #21262d;
+        padding: 2px 6px;
+        border-radius: 3px;
+      }
+    }
+  }
+  
+  .toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+    
+    input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #21262d;
+      transition: .4s;
+      border-radius: 24px;
+      
+      &:before {
+        position: absolute;
+        content: "";
+        height: 20px;
+        width: 20px;
+        left: 2px;
+        bottom: 2px;
+        background-color: white;
+        transition: .4s;
+      }
+      
+      input:checked + .slider {
+        background-color: #238636;
+      }
+      
+      input:checked + .slider:before {
+        transform: translateX(20px);
+      }
+    }
+  }
+`;
+
+const SkillCard: React.FC<{ skill: any; onToggle: (id: number) => void }> = ({ skill, onToggle }) => {
+  return (
+    <SkillCardStyled>
+      <div className="info">
+        <div className="name">{skill.name}</div>
+        <div className="description">{skill.description}</div>
+        <div className="meta">
+          <div className="category">{skill.category}</div>
+      </div>
+        </div>
+      <div className="toggle-switch">
+        <input
+          type="checkbox"
+          checked={skill.enabled}
+          onChange={() => onToggle(skill.id)}
+        />
+        <span className="slider"></span>
+      </div>
+    </SkillCardStyled>
+  );
+};
+
+export default Skills;
