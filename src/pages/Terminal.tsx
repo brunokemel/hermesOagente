@@ -1,16 +1,10 @@
-import React from 'react';
+import styled from 'styled-components';
+import Icon from '../components/shared/Icon';
+import { DataCard, DataHeader, DataRow, NameCell } from '../components/shared/DataTable';
+import { Badge, Button, Page, PageHeader, theme } from '../styles/theme';
 
-/**
- * @page Terminal
- * @description Página para acesso ao terminal integrado do Hermes Agent.
- */
-const Terminal: React.FC = () => {
-  return (
-    <div>
-      <h1>Terminal Integrado</h1>
-      <p>Esta é a página do terminal integrado. Em desenvolvimento...</p>
-    </div>
-  );
-};
-
+const runs=[['#2841','Gerar resumo dos pedidos','chat.web','12 out, 10:42','2.4 s','completed'],['#2840','python scripts/backup.py','automation','12 out, 10:30','18.2 s','completed'],['#2839','Analisar pasta de contratos','chat.web','12 out, 09:58','em curso','running'],['#2838','Sincronizar memória local','system','12 out, 09:41','840 ms','completed'],['#2837','npm run build','terminal','12 out, 09:15','4.1 s','failed']];
+/** Histórico observável do que o Hermes executou na máquina. */
+const Terminal=()=> <Page><PageHeader><div><div className="eyebrow">Observabilidade</div><h1>Execuções</h1><p>Audite comandos, ferramentas e resultados produzidos pelo agente.</p></div><Button><Icon name="terminal" size={16}/>Abrir terminal ao vivo</Button></PageHeader><Summary><div><span>Executadas hoje</span><strong>24</strong></div><div><span>Taxa de sucesso</span><strong>95.8%</strong></div><div><span>Tempo médio</span><strong>3.2 s</strong></div></Summary><DataCard><DataHeader><h3>Histórico de execução</h3><span>ATUALIZAÇÃO EM TEMPO REAL</span></DataHeader>{runs.map(r=><DataRow key={r[0]}><NameCell icon={<Icon name="terminal" size={16}/>}><strong>{r[1]}</strong><small>{r[0]} · {r[2]}</small></NameCell><span className="optional muted">{r[3]}</span><span className="optional muted">{r[4]}</span><Badge $tone={r[5]==='completed'?'success':r[5]==='running'?'warning':'neutral'}>{r[5]==='completed'?'concluído':r[5]==='running'?'executando':'falhou'}</Badge></DataRow>)}</DataCard></Page>;
+const Summary=styled.div`display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px;>div{padding:18px 20px;background:${theme.colors.panel};border:1px solid ${theme.colors.border};border-radius:12px;}span,strong{display:block;}span{color:${theme.colors.muted};font-size:10px;}strong{margin-top:9px;font:500 22px var(--font-mono);}@media(max-width:600px){grid-template-columns:1fr;}`;
 export default Terminal;

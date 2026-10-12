@@ -1,62 +1,12 @@
-import React from 'react';
+import type { ReactNode } from 'react';
 import styled from 'styled-components';
+import Sidebar from '../shared/Sidebar';
+import Header from '../shared/Header';
+import { theme } from '../../styles/theme';
 
-/**
- * @component MainLayout
- * @description Layout principal da aplicação com sidebar e header fixos.
- *              O conteúdo das páginas é renderizado no Outlet do react-router-dom.
- */
-const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  return (
-    <Container>
-      <HeaderStyled />
-      <Content>
-        <SidebarStyled />
-        <Main>
-          {children}
-        </Main>
-      </Content>
-    </Container>
-  );
-};
-
-const Container = styled.div`
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-`;
-
-const HeaderStyled = styled.header`
-  height: 60px;
-  background-color: #0d1117;
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 20px;
-  border-bottom: 1px solid #30363d;
-`;
-
-const Content = styled.div`
-  display: flex;
-  flex: 1;
-  overflow: hidden;
-`;
-
-const SidebarStyled = styled.aside`
-  width: 260px;
-  background-color: #0d1117;
-  color: white;
-  border-right: 1px solid #30363d;
-  overflow-y: auto;
-`;
-
-const Main = styled.main`
-  flex: 1;
-  background-color: #010409;
-  color: white;
-  overflow-y: auto;
-  padding: 20px;
-`;
-
+/** Estrutura principal: sidebar fixa, header contextual e área rolável de conteúdo. */
+const MainLayout = ({ children }: { children: ReactNode }) => <Shell><Sidebar/><Workspace><Header/><Main>{children}</Main></Workspace></Shell>;
+const Shell=styled.div`min-height:100vh;display:flex;background:${theme.colors.background};`;
+const Workspace=styled.div`min-width:0;flex:1;`;
+const Main=styled.main`min-height:calc(100vh - 68px);background:radial-gradient(circle at 75% -10%,rgba(255,184,77,.045),transparent 28%),${theme.colors.background};`;
 export default MainLayout;

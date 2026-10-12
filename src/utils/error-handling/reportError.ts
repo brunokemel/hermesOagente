@@ -39,7 +39,7 @@ export const reportError = async (
   };
   
   // Em desenvolvimento, apenas logar no console
-  if (process.env.NODE_ENV === 'development') {
+  if (import.meta.env.DEV) {
     console.error('[Error Reporting] Error payload:', errorPayload);
     return;
   }

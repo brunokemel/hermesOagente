@@ -1,32 +1,50 @@
-# React + TypeScript + Vite
+# Hermes — painel local
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Interface web para conversar com o Hermes Agent, acompanhar execuções e administrar automações, memórias, skills e conexões. O canal web é independente do WhatsApp.
 
-Currently, two official plugins are available:
+## Rodando o projeto
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```bash
+npm install
+npm run dev
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+Verificações disponíveis:
+
+```bash
+npm run build
+npm run lint
+```
+
+## Conectando a API do Hermes
+
+A integração está isolada em `src/services/HermesAgentService.ts`. Enquanto `mockMode` estiver como `true`, o chat usa respostas demonstrativas locais.
+
+Para ligar o backend real:
+
+1. Configure a URL padrão do construtor (atualmente `http://localhost:3001`).
+2. Instancie `HermesAgentService` com `mockMode = false`.
+3. Implemente no agente os endpoints `GET /health` e `POST /api/chat`.
+
+O envio do chat usa este formato:
+
+```json
+{ "message": "texto do usuário", "channel": "web" }
+```
+
+E espera uma resposta semelhante a:
+
+```json
+{ "message": "resposta do Hermes", "plan": ["passo 1", "passo 2"] }
+```
+
+O campo `channel: web` é intencional: ele permite manter sessão, histórico e regras separados do WhatsApp no backend.
+
+## Onde personalizar
+
+- `src/styles/theme.ts`: cores, raios e componentes visuais básicos.
+- `src/components/shared/Sidebar.tsx`: ordem e nome das abas.
+- `src/services/HermesAgentService.ts`: API HTTP/WebSocket do agente.
+- `src/models/Hermes.ts`: objetos de domínio usados na interface.
+
+Os blocos centrais têm comentários próximos aos pontos mais prováveis de manutenção.

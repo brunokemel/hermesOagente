@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Navigate, Routes, Route } from 'react-router-dom';
 import MainLayout from './components/layout/MainLayout';
 import Dashboard from './pages/Dashboard';
 import Skills from './pages/Skills';
@@ -8,6 +8,7 @@ import Plugins from './pages/Plugins';
 import Cron from './pages/Cron';
 import Terminal from './pages/Terminal';
 import Chat from './pages/Chat';
+import Settings from './pages/Settings';
 import ErrorBoundary from './components/error-boundary/ErrorBoundary';
 import ErrorFallback from './components/error-boundary/ErrorFallback';
 
@@ -36,6 +37,8 @@ function App() {
             <Route path="/cron" element={<Cron />} />
             <Route path="/terminal" element={<Terminal />} />
             <Route path="/chat" element={<Chat />} />
+            <Route path="/settings" element={<Settings />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </MainLayout>
       </ErrorBoundary>

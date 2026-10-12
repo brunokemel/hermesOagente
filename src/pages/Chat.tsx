@@ -1,16 +1,33 @@
-import React from 'react';
+import { useMemo, useState } from 'react';
+import styled from 'styled-components';
+import Icon from '../components/shared/Icon';
+import { ChatMessage } from '../models/Hermes';
+import { hermesAgentService } from '../services/HermesAgentService';
+import { Badge, Button, Card, Page, PageHeader, theme } from '../styles/theme';
 
-/**
- * @page Chat
- * @description Página para interface de chat do Hermes Agent.
- */
-const Chat: React.FC = () => {
-  return (
-    <div>
-      <h1>Chat Hermes</h1>
-      <p>Esta é a página de chat. Em desenvolvimento...</p>
-    </div>
-  );
+const initialMessages = [new ChatMessage('welcome','agent','Olá, Kemel. Estou conectado à sua máquina e pronto para ajudar. O que você precisa?',new Date())];
+
+/** Chat funcional em modo demonstrativo. A troca para API real acontece apenas no serviço. */
+const Chat = () => {
+  const [messages,setMessages]=useState(initialMessages); const [text,setText]=useState(''); const [sending,setSending]=useState(false);
+  const service=useMemo(()=>hermesAgentService,[]);
+  const submit=async()=>{const value=text.trim();if(!value||sending)return;setMessages(prev=>[...prev,new ChatMessage(crypto.randomUUID(),'user',value,new Date())]);setText('');setSending(true);try{const reply=await service.sendMessage(value);setMessages(prev=>[...prev,reply]);}catch(e){setMessages(prev=>[...prev,new ChatMessage(crypto.randomUUID(),'system',e instanceof Error?e.message:'Erro na conexão.',new Date())]);}finally{setSending(false);}};
+  return <ChatPage><PageHeader><div><div className="eyebrow">Canal web</div><h1>Conversa com Hermes</h1><p>Esta sessão é separada do seu atendimento pelo WhatsApp.</p></div><Badge $tone="success"><Dot/> online · local</Badge></PageHeader><ChatLayout><Threads><ThreadHead><strong>Conversas</strong><button aria-label="Nova conversa"><Icon name="plus" size={16}/></button></ThreadHead><Thread $active><i>H</i><div><strong>Nova conversa</strong><small>agora · canal web</small></div></Thread><Thread><i>R</i><div><strong>Relatório semanal</strong><small>ontem · 4 mensagens</small></div></Thread><Thread><i>B</i><div><strong>Backup do projeto</strong><small>10 out · concluído</small></div></Thread></Threads><Conversation><ConversationTop><div><Avatar>H</Avatar><span><strong>Hermes Agent</strong><small><Dot/> pronto para executar</small></span></div><Button><Icon name="more" size={16}/></Button></ConversationTop><Messages>{messages.map(message=><Message key={message.id} $role={message.role}><label>{message.role==='user'?'VOCÊ':message.role==='agent'?'HERMES':'SISTEMA'}</label><Bubble $role={message.role}><p>{message.content}</p>{message.plan&&<Plan><span>PLANO DE EXECUÇÃO</span>{message.plan.map((item,index)=><div key={item}><b>{String(index+1).padStart(2,'0')}</b>{item}</div>)}</Plan>}<time>{message.createdAt.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</time></Bubble></Message>)}{sending&&<Typing><i/><i/><i/></Typing>}</Messages><Composer><textarea value={text} onChange={e=>setText(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();void submit();}}} placeholder="Peça algo ao Hermes..." rows={2}/><ComposerBottom><span>Enter para enviar · Shift + Enter para quebrar linha</span><button onClick={()=>void submit()} disabled={!text.trim()||sending}><Icon name="send" size={17}/></button></ComposerBottom></Composer></Conversation></ChatLayout></ChatPage>;
 };
-
+const ChatPage=styled(Page)`height:calc(100vh - 68px);display:flex;flex-direction:column;padding-bottom:24px;${PageHeader}{margin-bottom:20px;}`;
+const Dot=styled.i`width:6px;height:6px;display:inline-block;border-radius:50%;background:${theme.colors.success};`;
+const ChatLayout=styled(Card)`min-height:0;flex:1;display:grid;grid-template-columns:220px 1fr;overflow:hidden;@media(max-width:760px){grid-template-columns:1fr;}`;
+const Threads=styled.aside`padding:14px;border-right:1px solid ${theme.colors.border};@media(max-width:760px){display:none;}`;
+const ThreadHead=styled.div`height:45px;display:flex;align-items:center;justify-content:space-between;padding:0 7px 10px;font-size:11px;button{width:28px;height:28px;display:grid;place-items:center;border:1px solid ${theme.colors.border};border-radius:7px;background:${theme.colors.panelSoft};cursor:pointer;}`;
+const Thread=styled.button<{$active?:boolean}>`width:100%;display:flex;align-items:center;gap:10px;padding:11px 9px;margin:3px 0;text-align:left;border:1px solid ${p=>p.$active?theme.colors.border:'transparent'};border-radius:9px;background:${p=>p.$active?theme.colors.elevated:'transparent'};cursor:pointer;i{width:29px;height:29px;display:grid;place-items:center;border-radius:8px;background:${theme.colors.accentSoft};color:${theme.colors.accent};font:500 11px var(--font-mono);font-style:normal;}div{min-width:0;}strong,small{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}strong{font-size:10px;}small{margin-top:4px;color:${theme.colors.faint};font-size:8px;}`;
+const Conversation=styled.section`min-width:0;display:flex;flex-direction:column;`;
+const ConversationTop=styled.div`height:64px;padding:0 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid ${theme.colors.border};>div:first-child{display:flex;align-items:center;gap:10px;}strong,small{display:block;}strong{font-size:11px;}small{margin-top:3px;color:${theme.colors.muted};font-size:9px;}small i{margin-right:5px;}`;
+const Avatar=styled.div`width:34px;height:34px;display:grid;place-items:center;background:${theme.colors.accentSoft};border:1px solid #5b4322;border-radius:10px;color:${theme.colors.accent};font:500 13px var(--font-mono);`;
+const Messages=styled.div`min-height:0;flex:1;overflow:auto;padding:24px clamp(18px,5vw,70px);`;
+const Message=styled.div<{$role:string}>`max-width:700px;margin:${p=>p.$role==='user'?'20px 0 20px auto':'20px auto 20px 0'};label{display:block;margin:0 0 7px 3px;color:${p=>p.$role==='user'?theme.colors.info:theme.colors.accent};font:500 9px var(--font-mono);letter-spacing:.12em;}`;
+const Bubble=styled.div<{$role:string}>`padding:15px 17px;border:1px solid ${p=>p.$role==='system'?'#66322f':theme.colors.border};border-radius:${p=>p.$role==='user'?'14px 4px 14px 14px':'4px 14px 14px 14px'};background:${p=>p.$role==='user'?'#171d24':theme.colors.panelSoft};p{margin:0;font-size:12px;line-height:1.65;}time{display:block;margin-top:9px;color:${theme.colors.faint};font:8px var(--font-mono);text-align:right;}`;
+const Plan=styled.div`margin-top:14px;padding:13px;background:#0b0d0e;border:1px solid ${theme.colors.border};border-radius:9px;>span{display:block;margin-bottom:8px;color:${theme.colors.faint};font:8px var(--font-mono);letter-spacing:.12em;}div{display:flex;gap:10px;padding:7px 0;border-top:1px solid ${theme.colors.border};color:${theme.colors.muted};font-size:10px;}b{color:${theme.colors.accent};font:500 9px var(--font-mono);}`;
+const Typing=styled.div`display:flex;gap:4px;padding:12px 15px;width:55px;background:${theme.colors.panelSoft};border-radius:9px;i{width:5px;height:5px;border-radius:50%;background:${theme.colors.muted};}`;
+const Composer=styled.div`margin:0 clamp(18px,5vw,70px) 20px;border:1px solid ${theme.colors.borderStrong};border-radius:12px;background:#0c0f10;overflow:hidden;focus-within{border-color:${theme.colors.accent};}textarea{width:100%;padding:14px 15px 5px;resize:none;outline:none;border:0;background:transparent;color:${theme.colors.text};font-size:12px;}`;
+const ComposerBottom=styled.div`display:flex;align-items:center;justify-content:space-between;padding:7px 9px 9px 15px;span{color:${theme.colors.faint};font-size:8px;}button{width:34px;height:34px;display:grid;place-items:center;border:0;border-radius:8px;background:${theme.colors.accent};color:#17120b;cursor:pointer;}button:disabled{opacity:.35;cursor:not-allowed;}@media(max-width:520px){span{display:none;}}`;
 export default Chat;
